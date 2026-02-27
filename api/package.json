@@ -1,0 +1,19 @@
+{
+    "name": "virtual-mark-functions",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "@azure/functions": "^4.4.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.6.0",
+        "@types/node": "^20.0.0"
+    },
+    "scripts": {
+        "build": "tsc -p .",
+        "start": "npm run build && func start --script-root dist"
+    }
+}

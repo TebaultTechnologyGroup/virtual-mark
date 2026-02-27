@@ -1,0 +1,13 @@
+{
+    "routes": [
+        {
+            "route": "/api/chat",
+            "methods": [
+                "POST"
+            ]
+        }
+    ],
+    "navigationFallback": {
+        "rewrite": "/index.html"
+    }
+}
