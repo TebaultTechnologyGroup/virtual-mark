@@ -72,7 +72,10 @@ async function handler(req: HttpRequest, ctx: InvocationContext): Promise<HttpRe
 
         const data = await upstream.json() as AgentResponse;
         const message = data?.output?.find((item: AgentOutput) => item.type === "message");
-        const content = message?.content?.[0]?.text ?? "(No response from agent)";
+        let content = message?.content?.[0]?.text ?? "(No response from agent)";
+
+        // remove source citations like 【1:23†source】
+        content = content.replace(/【\d+:\d+†source】/g, "").trim();
         return { status: 200, headers: { "Content-Type": "application/json" }, jsonBody: { response: content } };
 
     } catch (e: unknown) {
