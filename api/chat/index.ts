@@ -1,11 +1,21 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { DefaultAzureCredential } from "@azure/identity";
 
-type Role = "system" | "user" | "assistant" | "tool";
+type Role = "user" | "assistant";
 interface ChatMessage { role: Role; content: string; }
-interface ClientPayload { messages: ChatMessage[]; stream?: boolean; }
-interface OpenAIMessage { role: Role; content: string; }
-interface OpenAIChoice { index: number; message: OpenAIMessage; finish_reason?: string; }
-interface OpenAIResponse { choices?: OpenAIChoice[]; }
+interface ClientPayload { messages: ChatMessage[]; }
+
+interface AgentOutput {
+    type?: string;
+    content?: Array<{
+        text?: string;
+    }>;
+}
+
+interface AgentResponse {
+    output?: AgentOutput[];
+}
+
 
 function getEnv(name: string): string {
     const v = process.env[name];
@@ -24,13 +34,34 @@ async function handler(req: HttpRequest, ctx: InvocationContext): Promise<HttpRe
             return { status: 400, jsonBody: { error: "Invalid body. Expecting { messages: ChatMessage[] }." } };
         }
 
-        const endpoint = getEnv("AGENT_RESPONSE_API");
-        const apiKey = getEnv("AGENT_API_KEY");
+        const endpoint = getEnv("AGENT_ENDPOINT");       // https://virtual-mark-foundry.services.ai.azure.com/api/projects/proj-virtual-mark
+        const agentName = getEnv("AGENT_NAME");           // virtual-mark-agent
+        const agentVersion = getEnv("AGENT_VERSION");     // 7
 
-        const upstream = await fetch(endpoint, {
+        const credential = new DefaultAzureCredential();
+        const tokenResponse = await credential.getToken("https://ai.azure.com/.default");
+        const bearerToken = tokenResponse.token;
+
+        ctx.log(`Calling endpoint: ${endpoint}`);
+
+        const url = `${endpoint}/openai/responses?api-version=2025-11-15-preview`;
+        const agentModel = getEnv("AGENT_MODEL");
+
+        const upstream = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "api-key": apiKey },
-            body: JSON.stringify({ messages: payload.messages, stream: false })
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${bearerToken}`
+            },
+            body: JSON.stringify({
+                model: agentModel,
+                input: payload.messages,
+                agent: {
+                    name: agentName,
+                    version: agentVersion,
+                    type: "agent_reference"
+                }
+            })
         });
 
         if (!upstream.ok) {
@@ -39,9 +70,11 @@ async function handler(req: HttpRequest, ctx: InvocationContext): Promise<HttpRe
             return { status: upstream.status, jsonBody: { error: "Upstream agent error", detail: text } };
         }
 
-        const data = (await upstream.json()) as OpenAIResponse;
-        const content = data?.choices?.[0]?.message?.content ?? "(No response from agent)";
+        const data = await upstream.json() as AgentResponse;
+        const message = data?.output?.find((item: AgentOutput) => item.type === "message");
+        const content = message?.content?.[0]?.text ?? "(No response from agent)";
         return { status: 200, headers: { "Content-Type": "application/json" }, jsonBody: { response: content } };
+
     } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         ctx.error(`Handler failed: ${msg}`);
