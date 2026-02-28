@@ -47,11 +47,14 @@ async function handler(req: HttpRequest, ctx: InvocationContext): Promise<HttpRe
         const url = `${endpoint}/openai/responses?api-version=2025-11-15-preview`;
         const agentModel = getEnv("AGENT_MODEL");
 
+
+        const agentKey = getEnv("AGENT_KEY"); // Make sure this is in your Env Variables
+
         const upstream = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${bearerToken}`
+                "api-key": agentKey // Use 'api-key' for Azure AI services
             },
             body: JSON.stringify({
                 model: agentModel,
@@ -63,6 +66,7 @@ async function handler(req: HttpRequest, ctx: InvocationContext): Promise<HttpRe
                 }
             })
         });
+
 
         if (!upstream.ok) {
             const text = await upstream.text();
