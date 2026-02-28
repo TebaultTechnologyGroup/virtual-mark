@@ -2,8 +2,9 @@
     "name": "virtual-mark-functions",
     "private": true,
     "type": "module",
+    "main": "dist/chat/index.js",
     "engines": {
-        "node": ">=18"
+        "node": ">=20"
     },
     "dependencies": {
         "@azure/functions": "^4.4.0"
@@ -14,6 +15,6 @@
     },
     "scripts": {
         "build": "tsc -p .",
-        "start": "npm run build && func start --script-root dist"
+        "start": "npm run build && func start"
     }
 }
