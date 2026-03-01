@@ -1,3 +1,4 @@
-azure-ai-projects>=2.0.0
-azure-identity
 azure-functions
+azure-ai-projects~=2.0.0b1
+azure-identity~=1.20.0
+openai>=1.0.0,<2.0.0

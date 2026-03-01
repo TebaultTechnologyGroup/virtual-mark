@@ -3,11 +3,18 @@
         {
             "route": "/api/chat",
             "methods": [
-                "POST"
+                "POST",
+                "OPTIONS"
             ]
         }
     ],
     "navigationFallback": {
-        "rewrite": "/index.html"
+        "rewrite": "/index.html",
+        "exclude": [
+            "/api/*"
+        ]
+    },
+    "platform": {
+        "apiRuntime": "python:3.11"
     }
 }

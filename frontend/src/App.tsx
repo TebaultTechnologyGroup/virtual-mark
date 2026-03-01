@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Use the filename of your uploaded photo
-const markPhoto = "/public/mark_tebault.png";
+const markPhoto = "/mark_tebault.png";
 
 type Role = "user" | "assistant";
 interface ChatMessage {
@@ -116,6 +116,30 @@ export default function App() {
           >
             Contact Mark
           </a>
+          <div
+            style={{ marginTop: "30px", fontSize: "12px", color: "#94a3b8" }}
+          >
+            LinkIn:{" "}
+            <a
+              href="https://www.linkedin.com/in/mark-tebault/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              linkedin.com/in/mark-tebault
+            </a>
+          </div>
+          <div
+            style={{ marginTop: "10px", fontSize: "12px", color: "#94a3b8" }}
+          >
+            Website:{" "}
+            <a
+              href="https://www.tebaulttechnologygroup.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://www.tebaulttechnologygroup.com
+            </a>
+          </div>
         </div>
 
         {/* Right Side: Chat Interface */}
