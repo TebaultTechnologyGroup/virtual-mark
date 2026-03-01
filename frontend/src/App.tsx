@@ -140,6 +140,18 @@ export default function App() {
               https://www.tebaulttechnologygroup.com
             </a>
           </div>
+          <div
+            style={{ marginTop: "10px", fontSize: "12px", color: "#94a3b8" }}
+          >
+            Email:{" "}
+            <a
+              href="mailto:mark_tebault@bellsouth.net"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              mark_tebault@bellsouth.net
+            </a>
+          </div>
         </div>
 
         {/* Right Side: Chat Interface */}
