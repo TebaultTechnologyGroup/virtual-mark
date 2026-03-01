@@ -33,17 +33,20 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 
         user_input = messages[-1]["content"]
 
-        # 2. Build the project client.
-        #    DefaultAzureCredential uses Managed Identity in production
-        #    and your `az login` session for local dev.
+        # 2. DefaultAzureCredential automatically uses the Service Principal
+        #    when these env vars are set:
+        #      AZURE_CLIENT_ID     -> appId from az ad sp create-for-rbac
+        #      AZURE_CLIENT_SECRET -> password from az ad sp create-for-rbac
+        #      AZURE_TENANT_ID     -> tenant from az ad sp create-for-rbac
+        #
+        #    Locally it falls back to your `az login` session if those
+        #    vars are not set in local.settings.json.
         project_client = AIProjectClient(
             endpoint=os.environ["PROJECT_ENDPOINT"],
             credential=DefaultAzureCredential(),
         )
 
-        # 3. Get the OpenAI client and call the agent by name + version.
-        #    AGENT_NAME = "virtual-mark-agent"
-        #    AGENT_VERSION = "9"
+        # 3. Call the agent by name and version
         openai_client = project_client.get_openai_client()
 
         response = openai_client.responses.create(
