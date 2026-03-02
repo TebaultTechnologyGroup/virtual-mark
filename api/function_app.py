@@ -20,7 +20,10 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="chat", methods=["POST"])
 def chat(req: func.HttpRequest) -> func.HttpResponse:
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+    }
 
     try:
         # 1. Parse request body
