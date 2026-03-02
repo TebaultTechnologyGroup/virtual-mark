@@ -5,6 +5,16 @@ import os
 import re
 import json
 
+# Initialize the client once at module load time, not per request.
+# This means the token is fetched when the function app starts up,
+# so the first user request doesn't pay the authentication cost.
+_credential = DefaultAzureCredential()
+_project_client = AIProjectClient(
+    endpoint=os.environ["PROJECT_ENDPOINT"],
+    credential=_credential,
+)
+_openai_client = _project_client.get_openai_client()
+
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
@@ -33,23 +43,8 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 
         user_input = messages[-1]["content"]
 
-        # 2. DefaultAzureCredential automatically uses the Service Principal
-        #    when these env vars are set:
-        #      AZURE_CLIENT_ID     -> appId from az ad sp create-for-rbac
-        #      AZURE_CLIENT_SECRET -> password from az ad sp create-for-rbac
-        #      AZURE_TENANT_ID     -> tenant from az ad sp create-for-rbac
-        #
-        #    Locally it falls back to your `az login` session if those
-        #    vars are not set in local.settings.json.
-        project_client = AIProjectClient(
-            endpoint=os.environ["PROJECT_ENDPOINT"],
-            credential=DefaultAzureCredential(),
-        )
-
-        # 3. Call the agent by name and version
-        openai_client = project_client.get_openai_client()
-
-        response = openai_client.responses.create(
+        # 2. Call the agent using the module-level client
+        response = _openai_client.responses.create(
             input=[{"role": "user", "content": user_input}],
             extra_body={
                 "agent": {
@@ -60,10 +55,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             },
         )
 
-        # 4. Extract the response text
+        # 3. Extract the response text
         raw_content = response.output_text or "(No response from agent)"
 
-        # 5. Strip citation markers like 【4:1†source】
+        # 4. Strip citation markers like 【4:1†source】
         clean_content = re.sub(r"【\d+:\d+†[^】]*】", "", raw_content).strip()
 
         return func.HttpResponse(
