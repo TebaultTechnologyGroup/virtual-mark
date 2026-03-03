@@ -15,6 +15,12 @@ _project_client = AIProjectClient(
 )
 _openai_client = _project_client.get_openai_client()
 
+# Eagerly warm up the credential so the first real request doesn't fail
+try:
+    _credential.get_token("https://cognitiveservices.azure.com/.default")
+except Exception:
+    pass  # Log if needed, but don't block startup
+
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
